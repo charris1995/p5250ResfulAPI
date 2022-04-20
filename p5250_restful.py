@@ -1,9 +1,12 @@
 from cgitb import reset
+import os
+from pathlib import Path
+import shutil
 from flask import Flask, request, session
-import AS400API
+import p5250Wrapper
 
 app = Flask(__name__)
-ibm = AS400API.p5250WebAPI()
+ibm = p5250Wrapper.p5250WebAPI.p5250WebAPI()
 
 sessions = {}
 
@@ -11,11 +14,15 @@ sessions = {}
 def TestConnection():
     result = None
     sessionName = request.args.get("SessionName")
+    strName = sessionName
     sessionName = str(hash(sessionName))
     if sessionName in sessions.keys():
         return "Session Exists"
     else:
-        sessions[sessionName] = AS400API.p5250WebAPI()
+        pathForEmulator = 'C:\\Sessions\\' + strName + '\\'
+        #os.makedirs(pathForEmulator)
+        shutil.copytree('C:\\Program Files\\wc3270\\', pathForEmulator)
+        sessions[sessionName] = p5250Wrapper.p5250WebAPI.p5250WebAPI(npath=pathForEmulator)
     
     ibm = sessions[sessionName]
     isConnected = ibm.my_client.connect()
